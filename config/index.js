@@ -18,6 +18,9 @@ const favicon = require("serve-favicon");
 const path = require("path");
 
 // Middleware configuration
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
+
 module.exports = (app) => {
   // In development environment the app logs
   app.use(logger("dev"));
@@ -36,4 +39,22 @@ module.exports = (app) => {
 
   // Handles access to the favicon
   app.use(favicon(path.join(__dirname, "..", "public", "images", "favicon.ico")));
+
+  app.use(
+    session({
+      resave: true,
+      secret: process.env.SESSION_SECRET,
+      saveUninitialized: false,
+      cookie: {
+        maxAge: 60 * 60 * 24 * 7,
+      },
+      store: MongoStore.create({
+        mongoUrl:
+          process.env.MONGODB_URI ||
+          "mongodb://localhost/lab-express-basic-auth",
+        ttl: 60 * 60 * 24 * 7,
+      }),
+    })
+  );
 };
+

@@ -28,8 +28,31 @@ app.locals.title = `${capitalized(projectName)}- Generated with Ironlauncher`;
 const index = require('./routes/index');
 app.use('/', index);
 
+const authRoutes = require('./routes/auth.routes');
+app.use('/auth', authRoutes);
+
+
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require('./error-handling')(app);
+
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
+
+app.use(
+    session({
+        resave: true,
+      secret: process.env.SESSION_SECRET,
+      saveUninitialized: false,
+      cookie: {
+        maxAge: 60 * 60 * 24 * 7,
+      },
+      store: MongoStore.create({
+        mongoUrl:
+          process.env.MONGODB_URI,
+        ttl: 60 * 60 * 24 * 7,
+      }),
+    })
+  );
 
 module.exports = app;
 
